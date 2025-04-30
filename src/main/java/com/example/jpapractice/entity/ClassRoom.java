@@ -1,5 +1,6 @@
 package com.example.jpapractice.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +28,6 @@ public class ClassRoom {
     private String teacherName;
 
     @OneToMany(mappedBy = "classRoom")
-    // @JsonManagedReference // 순환 참조 해결 방법 1: 정방향 참조를 JSON 직렬화에 포함
-    // @JsonIgnore // 순환 참조 해결 방법 2: 해당 필드를 JSON 직렬화에서 완전히 제외
+    @JsonManagedReference
     private List<Student> students = new ArrayList<>();
 } 
