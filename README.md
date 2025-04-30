@@ -1,10 +1,5 @@
 # JPA 실습 - 순환 참조 문제 해결하기
 
-## 브랜치명 추천
-```
-git checkout -b feature/fix-circular-reference
-```
-
 ## 현재 발생하는 문제
 
 ### 1. 순환 참조 오류
