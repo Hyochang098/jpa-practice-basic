@@ -1,6 +1,5 @@
 package com.example.jpapractice.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,8 +20,7 @@ public class Student {
     @Column(nullable = false)
     private Integer age;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_room_id")
-    @JsonBackReference
     private ClassRoom classRoom;
 } 

@@ -56,7 +56,8 @@ public class StudentService {
      */
     @Transactional
     public Student updateStudent(Long id, Student updatedStudent) {
-        Student existingStudent = getStudentById(id);
+        Student existingStudent = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
         existingStudent.setName(updatedStudent.getName());
         existingStudent.setAge(updatedStudent.getAge());
         existingStudent.setClassRoom(updatedStudent.getClassRoom());
@@ -77,8 +78,10 @@ public class StudentService {
      * @param classRoomId 반 ID
      * @return 학생 목록
      */
-    public List<Student> getStudentsByClassRoom(Long classRoomId) {
-        return studentRepository.findByClassRoomId(classRoomId);
+    public List<StudentDto> getStudentsByClassRoom(Long classRoomId) {
+        return studentRepository.findByClassRoomId(classRoomId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
     
     /**
@@ -86,8 +89,10 @@ public class StudentService {
      * @param minAge 최소 나이
      * @return 학생 목록
      */
-    public List<Student> getStudentsByAge(Integer minAge) {
-        return studentRepository.findStudentsByAge(minAge);
+    public List<StudentDto> getStudentsByAge(Integer minAge) {
+        return studentRepository.findStudentsByAge(minAge).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     private StudentDto convertToDto(Student student) {

@@ -26,4 +26,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     
     // 메서드 이름 기반 쿼리 예시
     List<Student> findByNameContaining(String name);
+    
+    @Query("SELECT s FROM Student s JOIN FETCH s.classRoom WHERE s.id = :id")
+    Student findByIdWithClassRoom(@Param("id") Long id);
 } 
