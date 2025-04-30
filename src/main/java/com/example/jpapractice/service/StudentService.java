@@ -1,5 +1,6 @@
 package com.example.jpapractice.service;
 
+import com.example.jpapractice.dto.StudentDto;
 import com.example.jpapractice.entity.Student;
 import com.example.jpapractice.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +31,10 @@ public class StudentService {
      * 모든 학생 정보를 조회합니다.
      * @return 학생 목록
      */
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    public List<StudentDto> getAllStudents() {
+        return studentRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
     
     /**
@@ -38,9 +42,10 @@ public class StudentService {
      * @param id 학생 ID
      * @return 학생 정보
      */
-    public Student getStudentById(Long id) {
+    public StudentDto getStudentById(Long id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("학생을 찾을 수 없습니다: " + id));
+                .map(this::convertToDto)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
     }
     
     /**
@@ -83,5 +88,17 @@ public class StudentService {
      */
     public List<Student> getStudentsByAge(Integer minAge) {
         return studentRepository.findStudentsByAge(minAge);
+    }
+
+    private StudentDto convertToDto(Student student) {
+        StudentDto dto = new StudentDto();
+        dto.setId(student.getId());
+        dto.setName(student.getName());
+        dto.setAge(student.getAge());
+        if (student.getClassRoom() != null) {
+            dto.setClassRoomId(student.getClassRoom().getId());
+            dto.setClassRoomName(student.getClassRoom().getName());
+        }
+        return dto;
     }
 } 

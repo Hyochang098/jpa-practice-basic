@@ -8,6 +8,7 @@ JPA 실습을 위한 프로젝트입니다. 교실(ClassRoom)과 학생(Student)
 src/main/java/com/example/jpapractice/
 ├── config/           # 설정 클래스
 ├── controller/       # REST API 컨트롤러
+├── dto/             # 데이터 전송 객체
 ├── entity/          # JPA 엔티티
 ├── repository/      # JPA 리포지토리
 └── service/         # 비즈니스 로직 서비스
@@ -17,9 +18,9 @@ src/main/java/com/example/jpapractice/
 
 ### 엔티티 관계
 - `ClassRoom`과 `Student`는 1:N 관계
-- `@JsonManagedReference`와 `@JsonBackReference`를 사용하여 순환 참조 해결
-  - `ClassRoom` -> `Student` (정방향): `@JsonManagedReference`
-  - `Student` -> `ClassRoom` (역방향): `@JsonBackReference`
+- DTO 패턴을 사용하여 순환 참조 해결
+  - `StudentDto`: 학생 정보와 필요한 교실 정보만 포함
+  - `ClassRoomDto`: 교실 정보와 학생 목록 포함
 
 ### API 엔드포인트
 
@@ -77,17 +78,36 @@ cd jpa-practice
    - 양방향 관계 설정
    - 순환 참조 해결
 
-2. Spring Data JPA 활용
+2. DTO 패턴 적용
+   - 엔티티와 API 응답 분리
+   - 필요한 데이터만 선택적으로 포함
+   - API 버전 관리 용이성
+
+3. Spring Data JPA 활용
    - 기본 CRUD 기능
    - 커스텀 쿼리 메서드
    - JPQL 쿼리
 
-3. REST API 구현
+4. REST API 구현
    - RESTful API 설계
    - 컨트롤러 구현
    - 예외 처리
+   - DTO 변환 로직
 
-4. 성능 최적화
-   - 순환 참조 해결
-   - JSON 직렬화 최적화
+5. 성능 최적화
+   - DTO를 통한 데이터 최적화
+   - 필요한 필드만 조회
    - 쿼리 최적화
+
+## 순환 참조 해결 방법
+
+1. **DTO 패턴 (현재 적용)**
+   - 엔티티를 직접 노출하지 않고 DTO를 사용
+   - 필요한 데이터만 선택적으로 포함
+   - API 응답 구조를 명확하게 제어
+
+2. **다른 해결 방법들**
+   - MapStruct: DTO 변환 자동화
+   - Projection: 필요한 필드만 선택적 조회
+   - GraphQL: 클라이언트가 필요한 데이터만 요청
+   - Response Entity Wrapper: 응답을 감싸는 래퍼 클래스 사용
