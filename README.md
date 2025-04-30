@@ -22,39 +22,73 @@ src/main/java/com/example/jpapractice/
   - `StudentDto`: 학생 정보와 필요한 교실 정보만 포함
   - `ClassRoomDto`: 교실 정보와 학생 목록 포함
 
-### 관계 매핑 전략
+### N+1 문제와 해결 방법
 
-#### 양방향 관계의 문제점
-1. **성능 이슈**
-   - N+1 문제 발생 가능성 증가
-   - 불필요한 조인 쿼리 발생
-   - 지연 로딩 시 프록시 객체 관리 복잡성
+#### N+1 문제 발생 케이스
+```java
+// 1. 모든 반을 조회 (1번의 쿼리)
+List<ClassRoom> classRooms = classRoomRepository.findAll();
 
-2. **유지보수 어려움**
-   - 양쪽 엔티티의 상태 동기화 필요
-   - 연관관계 편의 메서드 관리 복잡
-   - 순환 참조 문제 발생
+// 2. 각 반의 학생들을 조회 (N번의 쿼리)
+for (ClassRoom classRoom : classRooms) {
+    List<Student> students = studentRepository.findByClassRoomId(classRoom.getId());
+}
+```
 
-3. **쿼리 최적화 어려움**
-   - 불필요한 조인 발생
-   - 페치 전략 설정 복잡
-   - 쿼리 튜닝 어려움
+#### N+1 문제 해결 방법
 
-#### 단방향 관계의 장점
-1. **성능 최적화**
-   - 필요한 방향으로만 조회 가능
-   - 불필요한 조인 제거
-   - 쿼리 최적화 용이
+1. **페치 조인 (Fetch Join)**
+```java
+@Query("SELECT DISTINCT s FROM Student s JOIN FETCH s.classRoom")
+List<Student> findAllWithClassRoom();
+```
 
-2. **유지보수 용이**
-   - 코드 복잡도 감소
-   - 상태 관리 단순화
-   - 순환 참조 문제 해결
+2. **배치 사이즈 설정**
+```properties
+spring.jpa.properties.hibernate.default_batch_fetch_size=100
+```
 
-3. **확장성**
-   - 새로운 요구사항에 대한 유연한 대응
-   - 마이크로서비스 아키텍처에 적합
-   - API 응답 구조 단순화
+3. **엔티티 그래프 (Entity Graph)**
+```java
+@EntityGraph(attributePaths = {"classRoom"})
+List<Student> findAll();
+```
+
+## 테스트 실행 방법
+
+### N+1 문제 테스트
+```bash
+# 전체 테스트 실행
+./gradlew test
+
+# 특정 테스트 클래스만 실행
+./gradlew test --tests "com.example.jpapractice.JpaNPlusOneTest"
+
+# 특정 테스트 메서드만 실행
+./gradlew test --tests "com.example.jpapractice.JpaNPlusOneTest.testNPlusOneProblem"
+./gradlew test --tests "com.example.jpapractice.JpaNPlusOneTest.testNPlusOneSolution"
+./gradlew test --tests "com.example.jpapractice.JpaNPlusOneTest.testNPlusOneSolutionWithBatchSize"
+```
+
+### 테스트 결과 확인
+1. **N+1 문제 발생 케이스**
+   - 콘솔에서 실행된 SQL 쿼리 수 확인
+   - 각 반마다 추가 쿼리가 발생하는 것을 확인
+
+2. **페치 조인 해결 케이스**
+   - 단 한 번의 쿼리로 모든 데이터를 조회
+   - 조인된 결과를 확인
+
+3. **배치 사이즈 해결 케이스**
+   - 배치 사이즈 설정에 따른 쿼리 최적화 확인
+   - IN 절을 사용한 배치 조회 확인
+
+### 테스트 로그 확인
+```properties
+# application.properties에 추가
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+```
 
 ### API 엔드포인트
 
@@ -159,6 +193,7 @@ cd jpa-practice
    - 페치 조인 활용
    - 배치 사이즈 설정
    - 지연 로딩 전략 최적화
+   - N+1 문제 해결 전략 수립
 
 3. **유지보수성**
    - 명확한 네이밍 컨벤션

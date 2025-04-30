@@ -29,4 +29,8 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     
     @Query("SELECT s FROM Student s JOIN FETCH s.classRoom WHERE s.id = :id")
     Student findByIdWithClassRoom(@Param("id") Long id);
+    
+    // N+1 문제 해결을 위한 페치 조인
+    @Query("SELECT DISTINCT s FROM Student s JOIN FETCH s.classRoom")
+    List<Student> findAllWithClassRoom();
 } 
